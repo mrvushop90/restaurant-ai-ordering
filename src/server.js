@@ -66,13 +66,22 @@ function buildOrderQuote(body) {
 
     const lineTotal = roundCurrency(menuItem.price * qty);
     subtotal += lineTotal;
-    quotedItems.push({
-      ...item,
-      name: itemName,
-      qty,
-      price: menuItem.price,
-      lineTotal,
-    });
+    quotedItems.push(
+      typeof item === "string"
+        ? {
+            name: itemName,
+            qty,
+            price: menuItem.price,
+            lineTotal,
+          }
+        : {
+            ...item,
+            name: itemName,
+            qty,
+            price: menuItem.price,
+            lineTotal,
+          },
+    );
   }
 
   subtotal = roundCurrency(subtotal);
