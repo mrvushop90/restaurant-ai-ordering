@@ -1,0 +1,71 @@
+{
+  "appetizers": [
+    {
+      "id": "app-1",
+      "name": "Crispy Calamari",
+      "price": 11.99,
+      "description": "Lightly breaded calamari served with lemon and marinara.",
+      "available": true
+    },
+    {
+      "id": "app-2",
+      "name": "Spinach Artichoke Dip",
+      "price": 9.49,
+      "description": "Warm dip with spinach, artichokes, and melted cheese.",
+      "available": true
+    },
+    {
+      "id": "app-3",
+      "name": "Garlic Parmesan Fries",
+      "price": 7.99,
+      "description": "Crispy fries tossed with garlic, parmesan, and herbs.",
+      "available": false
+    }
+  ],
+  "entrees": [
+    {
+      "id": "ent-1",
+      "name": "Grilled Chicken Bowl",
+      "price": 15.99,
+      "description": "Grilled chicken with rice, roasted vegetables, and house sauce.",
+      "available": true
+    },
+    {
+      "id": "ent-2",
+      "name": "Classic Cheeseburger",
+      "price": 13.49,
+      "description": "Beef burger with cheddar, lettuce, tomato, and fries.",
+      "available": true
+    },
+    {
+      "id": "ent-3",
+      "name": "Pasta Alfredo",
+      "price": 14.99,
+      "description": "Fettuccine in creamy alfredo sauce with parmesan.",
+      "available": true
+    }
+  ],
+  "drinks": [
+    {
+      "id": "drk-1",
+      "name": "Fresh Lemonade",
+      "price": 3.99,
+      "description": "House-made lemonade served over ice.",
+      "available": true
+    },
+    {
+      "id": "drk-2",
+      "name": "Iced Tea",
+      "price": 2.99,
+      "description": "Fresh brewed black iced tea.",
+      "available": true
+    },
+    {
+      "id": "drk-3",
+      "name": "Sparkling Water",
+      "price": 2.49,
+      "description": "Chilled sparkling water.",
+      "available": true
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+RESTAURANT AI ORDER TAKER V1
+
+GOAL
+- AI answers forwarded restaurant calls
+- AI speaks naturally like a human
+- AI supports multiple languages
+- AI takes pickup orders
+- AI confirms order clearly
+- AI creates a structured order
+- customer pays at pickup
+
+V1 RULES
+- pickup only
+- no payment by phone
+- no delivery yet
+- one restaurant only
+- one menu only
+- human handoff allowed when needed
+
+CORE STACK
+- Twilio
+- OpenAI
+- Node.js app
+- Railway later
+
+FIRST MODULES
+1. incoming call webhook
+2. websocket audio bridge
+3. restaurant prompt
+4. menu loader
+5. structured order capture
+6. order confirmation
+7. order output
