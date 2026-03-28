@@ -214,8 +214,21 @@ app.post("/orders/submit", (req, res) => {
 app.post("/twilio/voice", (req, res) => {
   const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
+  <Gather input="speech" action="/twilio/order" method="POST" timeout="3">
+    <Say voice="alice">
+      Hello, thank you for calling. Welcome to our restaurant. Im your AI order assistant. I can help with pickup orders.
+    </Say>
+  </Gather>
+</Response>`;
+
+  res.type("text/xml").send(twiml);
+});
+
+app.post("/twilio/order", (req, res) => {
+  const twiml = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
   <Say voice="alice">
-    Hello, thank you for calling. This is the restaurant AI assistant test line.
+    I heard you. Live order capture is coming next.
   </Say>
 </Response>`;
 
