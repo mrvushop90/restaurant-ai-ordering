@@ -4,7 +4,7 @@ const http = require("http");
 const express = require("express");
 const WebSocket = require("ws");
 const OpenAI = require("openai");
-const { createClient, LiveTranscriptionEvents } = require("@deepgram/sdk");
+const { Deepgram } = require("@deepgram/sdk");
 
 const PORT = Number(process.env.PORT || 3000);
 const RESTAURANT_NAME = "Com Tam Bros";
@@ -207,7 +207,7 @@ const mediaSessions = new Map();
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
-const deepgram = createClient(process.env.DEEPGRAM_API_KEY);
+const deepgramClient = new Deepgram(process.env.DEEPGRAM_API_KEY);
 
 function buildItemLookup(items) {
   const lookup = {};
@@ -700,8 +700,8 @@ async function processTranscript(connection, transcript) {
 }
 
 function createMediaConnection(ws) {
-  const deepgramConnection = deepgram.listen.live({
-    model: "nova-3",
+  const deepgramConnection = deepgramClient.transcription.live({
+    model: "nova-2",
     language: "multi",
     smart_format: true,
     encoding: "mulaw",
@@ -714,47 +714,29 @@ function createMediaConnection(ws) {
     deepgramConnection,
     callSid: "",
     streamSid: "",
-    transcriptParts: [],
     processing: false
   };
 
-  deepgramConnection.on(LiveTranscriptionEvents.Open, () => {
+  deepgramConnection.addListener("open", () => {
     console.log("DEEPGRAM STREAM OPEN");
   });
 
-  deepgramConnection.on(LiveTranscriptionEvents.Transcript, async (message) => {
-    const alternative = message &&
-      message.channel &&
-      message.channel.alternatives &&
-      message.channel.alternatives[0];
-    const text = alternative && alternative.transcript ? String(alternative.transcript).trim() : "";
+  deepgramConnection.addListener("transcriptReceived", async (data) => {
+    const transcript = JSON.parse(data);
+    const result = transcript?.channel?.alternatives?.[0]?.transcript;
 
-    if (!text) {
+    if (!result || !transcript.is_final) {
       return;
     }
 
-    if (message.is_final) {
-      connection.transcriptParts.push(text);
-    }
-
-    if (message.speech_final) {
-      const finalTranscript = connection.transcriptParts.join(" ").trim() || text;
-      connection.transcriptParts = [];
-      await processTranscript(connection, finalTranscript);
-    }
+    await processTranscript(connection, result);
   });
 
-  deepgramConnection.on(LiveTranscriptionEvents.UtteranceEnd, async () => {
-    const finalTranscript = connection.transcriptParts.join(" ").trim();
-    connection.transcriptParts = [];
-    await processTranscript(connection, finalTranscript);
-  });
-
-  deepgramConnection.on(LiveTranscriptionEvents.Error, (error) => {
+  deepgramConnection.addListener("error", (error) => {
     console.log("DEEPGRAM STREAM ERROR:", error);
   });
 
-  deepgramConnection.on(LiveTranscriptionEvents.Close, () => {
+  deepgramConnection.addListener("close", () => {
     console.log("DEEPGRAM STREAM CLOSED");
   });
 
