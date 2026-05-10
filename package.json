@@ -1,17 +1,21 @@
 {
   "name": "restaurant-ai-ordering",
   "version": "1.0.0",
-  "description": "",
-  "main": "src/server.js",
+  "description": "Com Tam Bros AI ordering server with Twilio Media Streams and Deepgram",
+  "main": "src/server-mediastream.js",
   "scripts": {
-    "start": "node src/server.js",
+    "start": "node src/server-mediastream.js",
+    "check": "node --check src/server-mediastream.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "dotenv": "^17.3.1",
-    "express": "^5.2.1"
+    "@deepgram/sdk": "^3.9.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "openai": "^4.0.0",
+    "ws": "^8.18.0"
   }
 }
