@@ -700,6 +700,8 @@ async function processTranscript(connection, transcript) {
 }
 
 function createMediaConnection(ws) {
+  const audioBuffer = [];
+  let deepgramReady = false;
   const deepgramConnection = deepgramClient.transcription.live({
     model: "nova-2",
     language: "multi",
@@ -714,11 +716,28 @@ function createMediaConnection(ws) {
     deepgramConnection,
     callSid: "",
     streamSid: "",
-    processing: false
+    processing: false,
+    queueAudio(chunk) {
+      if (!chunk || !chunk.length) {
+        return;
+      }
+
+      if (!deepgramReady) {
+        audioBuffer.push(chunk);
+        return;
+      }
+
+      deepgramConnection.send(chunk);
+    }
   };
 
   deepgramConnection.addListener("open", () => {
+    deepgramReady = true;
     console.log("DEEPGRAM STREAM OPEN");
+
+    while (audioBuffer.length > 0) {
+      deepgramConnection.send(audioBuffer.shift());
+    }
   });
 
   deepgramConnection.addListener("transcriptReceived", async (data) => {
@@ -786,13 +805,20 @@ wss.on("connection", (ws) => {
         mediaSessions.set(connection.callSid, connection);
 
         const session = getSession(connection.callSid);
+        const greeting = noSpeechPrompt(session);
         session.greeted = true;
-        appendHistory(session, "assistant", noSpeechPrompt(session));
+        appendHistory(session, "assistant", greeting);
         console.log("MEDIA STREAM START:", connection.callSid, connection.streamSid);
+
+        try {
+          await sendAudioToTwilio(connection, greeting, false);
+        } catch (error) {
+          console.log("GREETING TTS ERROR:", error.message);
+        }
       }
 
       if (data.event === "media" && data.media && data.media.payload) {
-        connection.deepgramConnection.send(Buffer.from(data.media.payload, "base64"));
+        connection.queueAudio(Buffer.from(data.media.payload, "base64"));
       }
 
       if (data.event === "stop") {
