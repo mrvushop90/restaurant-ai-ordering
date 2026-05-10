@@ -704,13 +704,9 @@ function createMediaConnection(ws) {
     model: "nova-3",
     language: "multi",
     smart_format: true,
-    detect_language: true,
     encoding: "mulaw",
     sample_rate: 8000,
-    interim_results: true,
-    endpointing: 300,
-    utterance_end_ms: "1000",
-    keyterm: ["pho", "com tam", "bun", "banh", "nuoc cham"]
+    channels: 1
   });
 
   const connection = {
