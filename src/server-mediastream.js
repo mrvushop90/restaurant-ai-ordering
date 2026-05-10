@@ -597,12 +597,10 @@ function buildStreamUrl(req) {
 }
 
 function createTwimlGreeting(streamUrl) {
-  const greeting = "Thank you for calling Com Tam Bros, this is Jenny. What can I get started for you today?";
   return `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say voice="Polly.Joanna-Neural" language="en-US">${escapeForXml(greeting)}</Say>
   <Connect>
-    <Stream url="${escapeForXml(streamUrl)}" />
+    <Stream url="${escapeForXml(streamUrl)}"/>
   </Connect>
 </Response>`;
 }
@@ -776,7 +774,7 @@ app.get("/", (req, res) => {
 });
 
 app.post("/twilio/voice", (req, res) => {
-  const streamUrl = buildStreamUrl(req);
+  const streamUrl = "wss://restaurant-ai-ordering-production.up.railway.app/mediastream";
   const twiml = createTwimlGreeting(streamUrl);
   res.type("text/xml").send(twiml);
 });
