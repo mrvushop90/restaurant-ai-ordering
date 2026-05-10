@@ -13,8 +13,6 @@ const RESTAURANT_HOURS = "Open Daily 9 AM to 9 PM";
 const PICKUP_TIME = "15 to 20 minutes";
 const TAX_RATE = 0.0825;
 const MAX_HISTORY_MESSAGES = 20;
-const BASE_URL = String(process.env.BASE_URL || "").trim();
-
 const MENU = [
   {
     name: "Pho Tai",
@@ -605,21 +603,53 @@ function createTwimlGreeting(streamUrl) {
 </Response>`;
 }
 
-async function fetchTtsPayload(text) {
-  if (!BASE_URL) {
-    throw new Error("Missing BASE_URL");
-  }
+async function textToSpeech(text) {
+  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-  // Assumes the Marin TTS endpoint returns Twilio-playable 8k mu-law bytes or
-  // another format already prepared upstream for Media Streams playback.
-  const response = await fetch(`${BASE_URL}/tts?text=${encodeURIComponent(text)}&voice=marin`);
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`TTS request failed: ${response.status} ${errorText}`);
-  }
+  const response = await client.audio.speech.create({
+    model: "tts-1",
+    voice: "nova",
+    input: text,
+    response_format: "pcm",
+    speed: 1.0
+  });
 
   const audioBuffer = Buffer.from(await response.arrayBuffer());
-  return audioBuffer.toString("base64");
+  return convertPCMToMulaw(audioBuffer);
+}
+
+function convertPCMToMulaw(pcmBuffer) {
+  const samples = [];
+
+  for (let i = 0; i < pcmBuffer.length - 1; i += 6) {
+    const sample = pcmBuffer.readInt16LE(i);
+    samples.push(linearToMulaw(sample));
+  }
+
+  return Buffer.from(samples);
+}
+
+function linearToMulaw(sample) {
+  const BIAS = 0x84;
+  const CLIP = 32635;
+  let sign = (sample >> 8) & 0x80;
+
+  if (sign !== 0) {
+    sample = -sample;
+  }
+
+  if (sample > CLIP) {
+    sample = CLIP;
+  }
+
+  sample += BIAS;
+  let exponent = 7;
+  let expMask;
+
+  for (expMask = 0x4000; (sample & expMask) === 0 && exponent > 0; exponent--, expMask >>= 1) {}
+
+  const mantissa = (sample >> (exponent + 3)) & 0x0f;
+  return ~(sign | (exponent << 4) | mantissa) & 0xff;
 }
 
 function sendWsJson(ws, payload) {
@@ -629,7 +659,7 @@ function sendWsJson(ws, payload) {
 }
 
 async function sendAudioToTwilio(connection, text, finalize) {
-  const payload = await fetchTtsPayload(text);
+  const payload = (await textToSpeech(text)).toString("base64");
 
   sendWsJson(connection.ws, {
     event: "media",
